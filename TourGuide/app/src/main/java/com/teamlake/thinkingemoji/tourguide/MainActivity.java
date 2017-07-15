@@ -289,7 +289,13 @@ public class MainActivity extends Activity implements ClickInterface {
 
             protected void onPostExecute(String result) {
                 //mImageDetails.setText(result);
-                Log.d(TAG + " 283", result);
+                Log.d(TAG + " 292", result);
+                String[] temp_results = result.split(":");
+                ArrayList<String> results = new ArrayList<String>();
+                for(int i=2; i<temp_results.length; i++) {
+                    results.add(temp_results[i].split("\n")[0].substring(1));
+                    Log.d(TAG + " 297", results.get(i-2));
+                }
                 if(ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     mFusedLocationClient.getLastLocation()
                         .addOnSuccessListener((Activity) mContext, new OnSuccessListener<Location>() {
@@ -297,7 +303,7 @@ public class MainActivity extends Activity implements ClickInterface {
                             public void onSuccess(Location location) {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
-                                    Log.d(TAG + " 291", location.toString());
+                                    Log.d(TAG + " 302", location.toString());
                                     final double lat = location.getLatitude();
                                     final double lon = location.getLongitude();
                                     // Instantiate the RequestQueue.
@@ -320,12 +326,12 @@ public class MainActivity extends Activity implements ClickInterface {
                                                 @Override
                                                 public void onResponse(String response) {
                                                     // Display the first 500 characters of the response string.
-                                                    Log.d(TAG + " 308", "Response is: "+ response);
+                                                    Log.d(TAG + " 325", "Response is: "+ response);
                                                 }
                                             }, new Response.ErrorListener() {
                                         @Override
                                         public void onErrorResponse(VolleyError error) {
-                                            Log.d(TAG + " 313", "That didn't work!");
+                                            Log.d(TAG + " 330", "That didn't work!");
                                         }
                                     });
                                     // Add the request to the RequestQueue.
