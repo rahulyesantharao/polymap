@@ -344,7 +344,7 @@ public class MainActivity extends Activity implements ClickInterface {
                                             .appendQueryParameter("type", typeParam)
                                             .build()
                                             .toString();
-
+                                    Log.d(TAG + " 347", url);
                                     // Request a string response from the provided URL.
                                     StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                                             new Response.Listener<String>() {
