@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -365,6 +366,9 @@ public class MainActivity extends Activity implements ClickInterface {
                                                     paramsSB.gravity = Gravity.TOP;
                                                     viewSB.setLayoutParams(paramsSB);
                                                     viewSB.setBackgroundColor(Color.parseColor("#80000000"));
+                                                    TextView tvSB = (TextView) (resultSB.getView()).findViewById(android.support.design.R.id.snackbar_text);
+                                                    tvSB.setTextSize(25);
+                                                    tvSB.setTypeface(tvSB.getTypeface(), Typeface.BOLD);
                                                     resultSB.show();
                                                 }
                                             }, new Response.ErrorListener() {
