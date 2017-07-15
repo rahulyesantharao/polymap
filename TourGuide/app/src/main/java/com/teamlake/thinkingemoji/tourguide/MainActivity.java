@@ -71,6 +71,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -78,6 +79,18 @@ import java.util.Map;
 
 public class MainActivity extends Activity implements ClickInterface {
 
+    private static final String[] PLACE_KEYWORDS = {"accounting", "airport", "amusement_park", "aquarium", "art_gallery", "atm",
+        "bakery", "bank", "bar", "beauty_salon", "bicycle_store", "book_store", "bowling_alley", "bus_station", "cafe",
+        "campground", "car_dealer", "car_rental", "car_repair", "car_wash", "casino", "cemetery", "church", "city_hall",
+        "clothing_store", "convenience_store", "courthouse", "dentist", "department_store", "doctor", "electrician",
+        "electronics_store", "embassy", "fire_station", "florist", "funeral_home", "furniture_store", "gas_station", "gym",
+        "hair_care", "hardware_store", "hindu_temple", "home_goods_store", "hospital", "insurance_agency", "jewelry_store",
+        "laundry", "lawyer", "library", "liquor_store", "local_government_office", "locksmith", "lodging", "meal_delivery",
+        "meal_takeaway", "mosque", "movie_rental", "movie_theater", "moving_company", "museum", "night_club", "painter", "park",
+        "parking", "pet_store", "pharmacy", "physiotherapist", "plumber", "police", "post_office", "real_estate_agency",
+        "restaurant", "roofing_contractor", "rv_park", "school", "shoe_store", "shopping_mall", "spa", "stadium", "storage",
+        "store", "subway_station", "synagogue", "taxi_stand", "train_station", "transit_station", "travel_agency", "university",
+        "veterinary_care", "zoo"};
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAvjSSy1WMhIxtfqEXu2vaOYrDiVi9C7nM";
     private static final String PLACE_VISION_API_KEY = "AIzaSyCIOI8zRmIkdqSzhyDaQwOl4sb1Z_Y-laE";
     public static final String FILE_NAME = "pic.jpg";
@@ -292,10 +305,19 @@ public class MainActivity extends Activity implements ClickInterface {
                 Log.d(TAG + " 292", result);
                 String[] temp_results = result.split(":");
                 ArrayList<String> results = new ArrayList<String>();
+                String foundTypeParam = "";
                 for(int i=2; i<temp_results.length; i++) {
                     results.add(temp_results[i].split("\n")[0].substring(1));
                     Log.d(TAG + " 297", results.get(i-2));
                 }
+                for(int i=0; i<results.size(); i++) {
+                    if(Arrays.asList(PLACE_KEYWORDS).contains(results.get(i))) {
+                        foundTypeParam = results.get(i);
+                        break;
+                    }
+                }
+                final String queryParam = results.get(0);
+                final String typeParam = foundTypeParam;
                 if(ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     mFusedLocationClient.getLastLocation()
                         .addOnSuccessListener((Activity) mContext, new OnSuccessListener<Location>() {
@@ -306,6 +328,7 @@ public class MainActivity extends Activity implements ClickInterface {
                                     Log.d(TAG + " 302", location.toString());
                                     final double lat = location.getLatitude();
                                     final double lon = location.getLongitude();
+
                                     // Instantiate the RequestQueue.
                                     RequestQueue queue = Volley.newRequestQueue(mContext);
                                     //String url ="https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
@@ -317,6 +340,8 @@ public class MainActivity extends Activity implements ClickInterface {
                                             .appendQueryParameter("key", PLACE_VISION_API_KEY)
                                             .appendQueryParameter("location", lat + "," + lon)
                                             .appendQueryParameter("radius", "100")
+                                            .appendQueryParameter("query", queryParam)
+                                            .appendQueryParameter("type", typeParam)
                                             .build()
                                             .toString();
 
