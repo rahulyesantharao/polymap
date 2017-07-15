@@ -67,12 +67,18 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -352,6 +358,14 @@ public class MainActivity extends Activity implements ClickInterface {
                                                 public void onResponse(String response) {
                                                     // Display the first 500 characters of the response string.
                                                     Log.d(TAG + " 325", "Response is: "+ response);
+                                                    String query = null;
+                                                    try {
+                                                        query = getQuery(response);
+                                                    } catch (JSONException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    Log.d(TAG + "361", "Query is " + query);
+                                                    getOutput(query);
                                                 }
                                             }, new Response.ErrorListener() {
                                         @Override
@@ -369,6 +383,100 @@ public class MainActivity extends Activity implements ClickInterface {
         }
         MyTask task = new MyTask(this);
         task.execute();
+    }
+
+    private String getQuery(String response) throws JSONException {
+        final JSONObject obj = new JSONObject(response);
+        final JSONArray results = obj.getJSONArray("results");
+        final JSONObject location = results.getJSONObject(0);
+        return location.getString("name");
+    }
+
+    private void getOutput(String query) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = new Uri.Builder()
+                .scheme("https")
+                .authority("en.wikipedia.org")
+                .path("w/api.php")
+                .appendQueryParameter("action", "opensearch")
+                .appendQueryParameter("search", query)
+                .appendQueryParameter("limit", "1")
+                .appendQueryParameter("namespace", "0")
+                .appendQueryParameter("format", "json")
+                .build()
+                .toString();
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d(TAG + " 325", "Response is: "+ response);
+                        String title = null;
+                        try {
+                            title = getWikiTitle(response);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        Log.d(TAG + "361", "Title is " + title);
+                        getSnippet(title);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG + " 330", "That didn't work!");
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+    }
+
+    private String getWikiTitle(String response) throws JSONException {
+        final JSONArray arr = new JSONArray(response);
+        final JSONArray titles = arr.getJSONArray(0);
+        return titles.getString(0);
+    }
+
+    private void getSnippet(String title) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        final String finalTitle = title;
+        String url = new Uri.Builder()
+                .scheme("https")
+                .authority("en.wikipedia.org")
+                .path("w/api.php")
+                .appendQueryParameter("format", "json")
+                .appendQueryParameter("action", "query")
+                .appendQueryParameter("prop", "extracts")
+                .appendQueryParameter("titles", title.replaceAll(" ", "_"))
+                .build()
+                .toString();
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d(TAG + " 325", "Response is: "+ response);
+                        try {
+                            getFinalString(response, finalTitle);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG + " 330", "That didn't work!");
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+    }
+
+    private void getFinalString(String response, String title) throws JSONException {
+        final JSONObject obj = new JSONObject(response);
+        final JSONObject results = obj.getJSONObject("query");
+        final JSONObject pages = results.getJSONObject("pages");
+        String finalString = title + pages.getString("extract");
+        Log.d(TAG + "479", "FINAL STRING IS " + finalString);
     }
 
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
