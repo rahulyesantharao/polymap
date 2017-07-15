@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v13.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -23,6 +24,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -357,6 +359,10 @@ public class MainActivity extends Activity implements ClickInterface {
                                                     // Display the first 500 characters of the response string.
                                                     Log.d(TAG + " 325", "Response is: "+ response);
                                                     Snackbar resultSB = Snackbar.make(findViewById(R.id.container), "Results Received!", LENGTH_INDEFINITE);
+                                                    View viewSB = resultSB.getView();
+                                                    CoordinatorLayout.LayoutParams paramsSB = (CoordinatorLayout.LayoutParams)viewSB.getLayoutParams();
+                                                    paramsSB.gravity = Gravity.TOP;
+                                                    viewSB.setLayoutParams(paramsSB);
                                                     resultSB.show();
                                                 }
                                             }, new Response.ErrorListener() {
