@@ -29,6 +29,12 @@ import android.widget.Toast;
 
 import android.location.Location;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -65,12 +71,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends Activity implements ClickInterface {
 
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAvjSSy1WMhIxtfqEXu2vaOYrDiVi9C7nM";
+    private static final String PLACE_VISION_API_KEY = "AIzaSyCIOI8zRmIkdqSzhyDaQwOl4sb1Z_Y-laE";
     public static final String FILE_NAME = "pic.jpg";
     private static final String ANDROID_CERT_HEADER = "X-Android-Cert";
     private static final String ANDROID_PACKAGE_HEADER = "X-Android-Package";
@@ -288,7 +297,39 @@ public class MainActivity extends Activity implements ClickInterface {
                             public void onSuccess(Location location) {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
-                                    Log.d(TAG + "291", location.toString());
+                                    Log.d(TAG + " 291", location.toString());
+                                    final double lat = location.getLatitude();
+                                    final double lon = location.getLongitude();
+                                    // Instantiate the RequestQueue.
+                                    RequestQueue queue = Volley.newRequestQueue(mContext);
+                                    //String url ="https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
+
+                                    String url = new Uri.Builder()
+                                            .scheme("https")
+                                            .authority("maps.googleapis.com")
+                                            .path("maps/api/place/nearbysearch/json")
+                                            .appendQueryParameter("key", PLACE_VISION_API_KEY)
+                                            .appendQueryParameter("location", lat + "," + lon)
+                                            .appendQueryParameter("radius", "100")
+                                            .build()
+                                            .toString();
+
+                                    // Request a string response from the provided URL.
+                                    StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                                            new Response.Listener<String>() {
+                                                @Override
+                                                public void onResponse(String response) {
+                                                    // Display the first 500 characters of the response string.
+                                                    Log.d(TAG + " 308", "Response is: "+ response);
+                                                }
+                                            }, new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(VolleyError error) {
+                                            Log.d(TAG + " 313", "That didn't work!");
+                                        }
+                                    });
+                                    // Add the request to the RequestQueue.
+                                    queue.add(stringRequest);
                                 }
                             }
                         });
