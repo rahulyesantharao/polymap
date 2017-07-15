@@ -18,4 +18,6 @@
     <string name="description_info">Info</string>
     <string name="request_permission">This sample needs camera permission.</string>
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="image_picker_error">Something is wrong with that image. Pick a different one please.</string>
+    <string name="loading_message">Uploading image. Please wait.</string>
 </resources>

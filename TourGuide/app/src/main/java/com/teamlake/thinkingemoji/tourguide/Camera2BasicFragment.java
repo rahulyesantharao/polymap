@@ -28,6 +28,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -56,6 +57,15 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class Camera2BasicFragment extends Fragment implements View.OnClickListener, FragmentCompat.OnRequestPermissionsResultCallback {
+
+    ClickInterface ci;
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.ci = (ClickInterface) context;
+    }
 
     /**
      * Conversion from screen rotation to JPEG orientation.
@@ -404,6 +414,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         return inflater.inflate(R.layout.fragment_camera2_basic, container, false);
     }
 
@@ -417,7 +428,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mFile = new File(getActivity().getExternalFilesDir(null), "pic.jpg");
+        mFile = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "pic.jpg");
     }
 
     @Override
@@ -871,6 +882,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
         switch (view.getId()) {
             case R.id.picture: {
                 takePicture();
+                ci.buttonClicked();
                 break;
             }
             case R.id.info: {
