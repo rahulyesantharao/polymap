@@ -250,10 +250,10 @@ public class MainActivity extends Activity implements ClickInterface {
 
                         // add the features we want
                         annotateImageRequest.setFeatures(new ArrayList<Feature>() {{
-                            Feature labelDetection = new Feature();
-                            labelDetection.setType("LABEL_DETECTION");
-                            labelDetection.setMaxResults(10);
-                            add(labelDetection);
+                            Feature landmarkDetection = new Feature();
+                            landmarkDetection.setType("LANDMARK_DETECTION");
+                            landmarkDetection.setMaxResults(10);
+                            add(landmarkDetection);
                         }});
 
                         // Add the list of one thing to the request
@@ -323,9 +323,14 @@ public class MainActivity extends Activity implements ClickInterface {
         String message = "I found these things:\n\n";
 
         List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
-        if (labels != null) {
+        List<EntityAnnotation> landmarks = response.getResponses().get(1).getLandmarkAnnotations();
+        if (labels != null || landmarks != null) {
             for (EntityAnnotation label : labels) {
                 message += String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription());
+                message += "\n";
+            }
+            for (EntityAnnotation landmark : landmarks) {
+                message += String.format(Locale.US, "%.3f: %s", landmark.getScore(), landmark.getDescription());
                 message += "\n";
             }
         } else {
