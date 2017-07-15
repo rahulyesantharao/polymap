@@ -57,6 +57,15 @@ import java.util.concurrent.TimeUnit;
 
 public class Camera2BasicFragment extends Fragment implements View.OnClickListener, FragmentCompat.OnRequestPermissionsResultCallback {
 
+    ClickInterface ci;
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.ci = (ClickInterface) context;
+    }
+
     /**
      * Conversion from screen rotation to JPEG orientation.
      */
@@ -404,6 +413,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         return inflater.inflate(R.layout.fragment_camera2_basic, container, false);
     }
 
@@ -871,6 +881,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
         switch (view.getId()) {
             case R.id.picture: {
                 takePicture();
+                ci.buttonClicked();
                 break;
             }
             case R.id.info: {
