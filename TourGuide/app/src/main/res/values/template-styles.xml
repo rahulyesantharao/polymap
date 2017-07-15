@@ -18,11 +18,11 @@
 
     <!-- Activity themes -->
 
-    <style name="Theme.Base" parent="android:Theme.Light" />
-
-    <style name="Theme.Sample" parent="Theme.Base" />
-
-    <style name="AppTheme" parent="Theme.Sample" />
+    <style name="Theme.Base" parent="android:Theme.Material.Light"/>
+    <style name="AppTheme" parent="Theme.Base">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
     <!-- Widget styling -->
 
     <style name="Widget" />

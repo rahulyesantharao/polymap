@@ -3,7 +3,11 @@ package com.teamlake.thinkingemoji.tourguide;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v13.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -22,6 +26,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -82,6 +87,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import static android.support.design.widget.Snackbar.LENGTH_INDEFINITE;
+import static android.widget.Toast.LENGTH_LONG;
 
 public class MainActivity extends Activity implements ClickInterface {
 
@@ -207,11 +215,11 @@ public class MainActivity extends Activity implements ClickInterface {
 
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
-                Toast.makeText(this, R.string.image_picker_error, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
             }
         } else {
             Log.d(TAG, "Image picker gave us a null image.");
-            Toast.makeText(this, R.string.image_picker_error, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
         }
     }
 
@@ -482,6 +490,16 @@ public class MainActivity extends Activity implements ClickInterface {
         final JSONObject finalObj = pages.getJSONObject(strName);
         String finalString = title + ": " + finalObj.getString("extract");
         Log.d(TAG + "479", "FINAL STRING IS " + finalString);
+        Snackbar resultSB = Snackbar.make(findViewById(R.id.container), finalString, LENGTH_INDEFINITE);
+        View viewSB = resultSB.getView();
+        CoordinatorLayout.LayoutParams paramsSB = (CoordinatorLayout.LayoutParams)viewSB.getLayoutParams();
+        paramsSB.gravity = Gravity.TOP;
+        viewSB.setLayoutParams(paramsSB);
+        viewSB.setBackgroundColor(Color.parseColor("#80000000"));
+        TextView tvSB = (TextView) (resultSB.getView()).findViewById(android.support.design.R.id.snackbar_text);
+        tvSB.setTextSize(25);
+        tvSB.setTypeface(tvSB.getTypeface(), Typeface.BOLD);
+        resultSB.show();
     }
 
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
