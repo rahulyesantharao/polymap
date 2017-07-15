@@ -26,7 +26,6 @@
         android:layout_alignParentTop="true" />
 
     <FrameLayout
-        android:id="@+id/control"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
