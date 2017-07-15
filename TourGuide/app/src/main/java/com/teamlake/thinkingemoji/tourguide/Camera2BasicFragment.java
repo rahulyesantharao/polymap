@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-public class Camera2BasicFragment extends Fragment implements View.OnClickListener {
+public class Camera2BasicFragment extends Fragment implements View.OnClickListener, FragmentCompat.OnRequestPermissionsResultCallback {
 
     /**
      * Conversion from screen rotation to JPEG orientation.
