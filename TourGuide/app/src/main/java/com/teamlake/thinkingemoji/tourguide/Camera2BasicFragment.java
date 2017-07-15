@@ -838,7 +838,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                                @NonNull CaptureRequest request,
                                                @NonNull TotalCaptureResult result) {
-                    showToast("Saved: " + mFile);
+                    showToast("Getting your results...");
                     Log.d(TAG, mFile.toString());
                     unlockFocus();
                 }
