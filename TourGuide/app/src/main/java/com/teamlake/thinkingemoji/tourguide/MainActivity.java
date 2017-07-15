@@ -16,5 +16,7 @@ public class MainActivity extends Activity {
                     .replace(R.id.container, Camera2BasicFragment.newInstance())
                     .commit();
         }
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
     }
 }
