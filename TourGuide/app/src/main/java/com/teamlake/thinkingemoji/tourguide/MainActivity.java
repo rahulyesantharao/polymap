@@ -256,7 +256,8 @@ public class MainActivity extends Activity implements ClickInterface {
                     BatchAnnotateImagesRequest batchAnnotateImagesRequest =
                             new BatchAnnotateImagesRequest();
                     batchAnnotateImagesRequest.setRequests(new ArrayList<AnnotateImageRequest>() {{
-                        AnnotateImageRequest annotateImageRequest = new AnnotateImageRequest();
+                        AnnotateImageRequest landmarkImageRequest = new AnnotateImageRequest();
+                        AnnotateImageRequest labelImageRequest = new AnnotateImageRequest();
 
                         // Add the image
                         Image base64EncodedImage = new Image();
@@ -268,10 +269,11 @@ public class MainActivity extends Activity implements ClickInterface {
 
                         // Base64 encode the JPEG
                         base64EncodedImage.encodeContent(imageBytes);
-                        annotateImageRequest.setImage(base64EncodedImage);
+                        landmarkImageRequest.setImage(base64EncodedImage);
+                        labelImageRequest.setImage(base64EncodedImage);
 
                         // add the features we want
-                        annotateImageRequest.setFeatures(new ArrayList<Feature>() {{
+                        landmarkImageRequest.setFeatures(new ArrayList<Feature>() {{
                             Feature landmarkDetection = new Feature();
                             landmarkDetection.setType("LANDMARK_DETECTION");
                             landmarkDetection.setMaxResults(10);
@@ -279,7 +281,17 @@ public class MainActivity extends Activity implements ClickInterface {
                         }});
 
                         // Add the list of one thing to the request
-                        add(annotateImageRequest);
+                        add(landmarkImageRequest);
+
+                        labelImageRequest.setFeatures(new ArrayList<Feature>() {{
+                            Feature labelDetection = new Feature();
+                            labelDetection.setType("LABEL_DETECTION");
+                            labelDetection.setMaxResults(10);
+                            add(labelDetection);
+                        }});
+
+                        // Add the list of one thing to the request
+                        add(labelImageRequest);
                     }});
 
                     Vision.Images.Annotate annotateRequest =
@@ -316,54 +328,57 @@ public class MainActivity extends Activity implements ClickInterface {
                         break;
                     }
                 }
-                final String queryParam = results.get(0);
-                final String typeParam = foundTypeParam;
-                if(ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    mFusedLocationClient.getLastLocation()
-                        .addOnSuccessListener((Activity) mContext, new OnSuccessListener<Location>() {
-                            @Override
-                            public void onSuccess(Location location) {
-                                // Got last known location. In some rare situations this can be null.
-                                if (location != null) {
-                                    Log.d(TAG + " 302", location.toString());
-                                    final double lat = location.getLatitude();
-                                    final double lon = location.getLongitude();
+                for(int i = 0; i < 5 && i < results.size(); i++) {
+                    final String queryParam = results.get(i);
+                    final String typeParam = foundTypeParam;
+                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        mFusedLocationClient.getLastLocation()
+                            .addOnSuccessListener((Activity) mContext, new OnSuccessListener<Location>() {
+                                @Override
+                                public void onSuccess(Location location) {
+                                    // Got last known location. In some rare situations this can be null.
+                                    if (location != null) {
+                                        Log.d(TAG + " 302", location.toString());
+                                        final double lat = location.getLatitude();
+                                        final double lon = location.getLongitude();
 
-                                    // Instantiate the RequestQueue.
-                                    RequestQueue queue = Volley.newRequestQueue(mContext);
-                                    //String url ="https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
+                                        // Instantiate the RequestQueue.
+                                        RequestQueue queue = Volley.newRequestQueue(mContext);
+                                        //String url ="https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
 
-                                    String url = new Uri.Builder()
-                                            .scheme("https")
-                                            .authority("maps.googleapis.com")
-                                            .path("maps/api/place/nearbysearch/json")
-                                            .appendQueryParameter("key", PLACE_VISION_API_KEY)
-                                            .appendQueryParameter("location", lat + "," + lon)
-                                            .appendQueryParameter("radius", "100")
-                                            .appendQueryParameter("query", queryParam)
-                                            .appendQueryParameter("type", typeParam)
-                                            .build()
-                                            .toString();
-                                    Log.d(TAG + " 347", url);
-                                    // Request a string response from the provided URL.
-                                    StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                                            new Response.Listener<String>() {
-                                                @Override
-                                                public void onResponse(String response) {
-                                                    // Display the first 500 characters of the response string.
-                                                    Log.d(TAG + " 325", "Response is: "+ response);
-                                                }
-                                            }, new Response.ErrorListener() {
-                                        @Override
-                                        public void onErrorResponse(VolleyError error) {
-                                            Log.d(TAG + " 330", "That didn't work!");
-                                        }
-                                    });
-                                    // Add the request to the RequestQueue.
-                                    queue.add(stringRequest);
+                                        String url = new Uri.Builder()
+                                                .scheme("https")
+                                                .authority("maps.googleapis.com")
+                                                .path("maps/api/place/nearbysearch/json")
+                                                .appendQueryParameter("key", PLACE_VISION_API_KEY)
+                                                .appendQueryParameter("location", lat + "," + lon)
+                                                .appendQueryParameter("radius", "100")
+                                                .appendQueryParameter("query", queryParam)
+                                                .appendQueryParameter("type", typeParam)
+                                                .build()
+                                                .toString();
+                                        Log.d(TAG + " 347", url);
+                                        // Request a string response from the provided URL.
+                                        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                                                new Response.Listener<String>() {
+                                                    @Override
+                                                    public void onResponse(String response) {
+                                                        // Display the first 500 characters of the response string.
+                                                        Log.d(TAG + " 325", "Response is: " + response);
+
+                                                    }
+                                                }, new Response.ErrorListener() {
+                                            @Override
+                                            public void onErrorResponse(VolleyError error) {
+                                                Log.d(TAG + " 330", "That didn't work!");
+                                            }
+                                        });
+                                        // Add the request to the RequestQueue.
+                                        queue.add(stringRequest);
+                                    }
                                 }
-                            }
-                        });
+                            });
+                    }
                 }
             }
         }
@@ -392,18 +407,19 @@ public class MainActivity extends Activity implements ClickInterface {
     }
 
     private String convertResponseToString(BatchAnnotateImagesResponse response) {
-        String message = "I found these things:\n\n";
+        Log.d(TAG, "395 " + ((Integer) response.getResponses().size()).toString());
+        Log.d(TAG, "\n");
+        String message = "I found:\n\n";
 
-        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
-        List<EntityAnnotation> landmarks = response.getResponses().get(1).getLandmarkAnnotations();
-        if (labels != null || landmarks != null) {
-            for (EntityAnnotation label : labels) {
-                message += String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription());
-                message += "\n";
-            }
+        List<EntityAnnotation> landmarks = response.getResponses().get(0).getLandmarkAnnotations();
+        List<EntityAnnotation> labels = response.getResponses().get(1).getLabelAnnotations();
+        if (landmarks != null || labels != null) {
             for (EntityAnnotation landmark : landmarks) {
                 message += String.format(Locale.US, "%.3f: %s", landmark.getScore(), landmark.getDescription());
                 message += "\n";
+            }
+            for (EntityAnnotation label : labels) {
+                message += String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription());
             }
         } else {
             message += "nothing";
