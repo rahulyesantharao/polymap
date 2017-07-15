@@ -3,6 +3,7 @@ package com.teamlake.thinkingemoji.tourguide;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -363,6 +364,7 @@ public class MainActivity extends Activity implements ClickInterface {
                                                     CoordinatorLayout.LayoutParams paramsSB = (CoordinatorLayout.LayoutParams)viewSB.getLayoutParams();
                                                     paramsSB.gravity = Gravity.TOP;
                                                     viewSB.setLayoutParams(paramsSB);
+                                                    viewSB.setBackgroundColor(Color.parseColor("#80000000"));
                                                     resultSB.show();
                                                 }
                                             }, new Response.ErrorListener() {
