@@ -74,9 +74,9 @@ public class MainActivity extends Activity implements ClickInterface {
 
     @Override
     public void buttonClicked() {
-        Log.d(TAG + "77", "*****BUTTON WAS CLICKED");
-        Uri photoUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", getCameraFile());
-        Log.d(TAG + "79", photoUri.toString());
+        Log.d(TAG + " 77", "*****BUTTON WAS CLICKED");
+        Uri photoUri = Uri.fromFile(getCameraFile()); //FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", getCameraFile());
+        Log.d(TAG + " 79", photoUri.toString());
         uploadImage(photoUri);
     }
 
@@ -95,7 +95,7 @@ public class MainActivity extends Activity implements ClickInterface {
                                 1200);
 
                 callCloudVision(bitmap);
-                mMainImage.setImageBitmap(bitmap);
+                //mMainImage.setImageBitmap(bitmap);
 
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
@@ -109,7 +109,8 @@ public class MainActivity extends Activity implements ClickInterface {
 
     private void callCloudVision(final Bitmap bitmap) throws IOException {
         // Switch text to loading
-        mImageDetails.setText(R.string.loading_message);
+        //mImageDetails.setText(R.string.loading_message);
+        Log.d(TAG + " 113", "LOADING");
 
         // Do the real work in an async task, because we need to use the network anyway
         new AsyncTask<Object, Void, String>() {
@@ -192,7 +193,8 @@ public class MainActivity extends Activity implements ClickInterface {
             }
 
             protected void onPostExecute(String result) {
-                mImageDetails.setText(result);
+                //mImageDetails.setText(result);
+                Log.d(TAG + " 197", result);
             }
         }.execute();
     }
