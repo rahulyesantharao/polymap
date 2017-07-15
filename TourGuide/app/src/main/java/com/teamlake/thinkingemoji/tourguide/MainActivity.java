@@ -74,9 +74,9 @@ public class MainActivity extends Activity implements ClickInterface {
 
     @Override
     public void buttonClicked() {
-        Log.d(TAG, "*****BUTTON WAS CLICKED");
+        Log.d(TAG + "77", "*****BUTTON WAS CLICKED");
         Uri photoUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", getCameraFile());
-        Log.d(TAG, photoUri.toString());
+        Log.d(TAG + "79", photoUri.toString());
         uploadImage(photoUri);
     }
 
