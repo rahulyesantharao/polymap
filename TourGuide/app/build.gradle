@@ -47,6 +47,8 @@ dependencies {
        // exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     }
 
+    compile 'com.google.android.gms:play-services-location:11.0.2'
+
 
     testCompile 'junit:junit:4.12'
 }

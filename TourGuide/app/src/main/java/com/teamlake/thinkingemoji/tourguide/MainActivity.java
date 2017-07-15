@@ -1,7 +1,11 @@
 package com.teamlake.thinkingemoji.tourguide;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v13.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.Manifest;
 import android.content.DialogInterface;
@@ -23,6 +27,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.location.Location;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;
@@ -38,6 +46,21 @@ import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
 
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -61,6 +84,8 @@ public class MainActivity extends Activity implements ClickInterface {
     private TextView mImageDetails;
     private ImageView mMainImage;
 
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+
     private FusedLocationProviderClient mFusedLocationClient;
 
     @Override
@@ -73,21 +98,58 @@ public class MainActivity extends Activity implements ClickInterface {
                     .commit();
         }
 
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
     }
 
     @Override
-    public void buttonClicked() {
-        mFusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            // ...
-                        }
-                    }
-                });
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch(requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+
+
+                } else {
+                    // TODO:
+                    //  Handle user not giving location
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 
     @Override
@@ -131,7 +193,13 @@ public class MainActivity extends Activity implements ClickInterface {
         Log.d(TAG + " 113", "LOADING");
 
         // Do the real work in an async task, because we need to use the network anyway
-        new AsyncTask<Object, Void, String>() {
+        class MyTask extends AsyncTask<Object, Void, String> {
+            private Context mContext;
+
+            public MyTask(Context context) {
+                mContext = context;
+            }
+
             @Override
             protected String doInBackground(Object... params) {
                 try {
@@ -212,9 +280,23 @@ public class MainActivity extends Activity implements ClickInterface {
 
             protected void onPostExecute(String result) {
                 //mImageDetails.setText(result);
-                Log.d(TAG + " 197", result);
+                Log.d(TAG + " 283", result);
+                if(ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    mFusedLocationClient.getLastLocation()
+                        .addOnSuccessListener((Activity) mContext, new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                // Got last known location. In some rare situations this can be null.
+                                if (location != null) {
+                                    Log.d(TAG + "291", location.toString());
+                                }
+                            }
+                        });
+                }
             }
-        }.execute();
+        }
+        MyTask task = new MyTask(this);
+        task.execute();
     }
 
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
