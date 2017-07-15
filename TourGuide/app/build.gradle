@@ -29,9 +29,24 @@ dependencies {
     compile 'com.android.support:support-v4:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
 
-    compile 'com.google.api-client:google-api-client-android:1.22.0'
-    compile 'com.google.apis:google-api-services-vision:v1-rev357-1.22.0'
+    compile('com.google.api-client:google-api-client-android:1.22.0') {
+        exclude module: 'httpclient'
+        //exclude group: 'org.apache.httpcomponents' //by group
+        //exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+    compile('com.google.apis:google-api-services-vision:v1-rev357-1.22.0') {
+        exclude module: 'httpclient'
+        //exclude group: 'org.apache.httpcomponents' //by group
+        //exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
     compile 'com.google.code.findbugs:jsr305:2.0.1'
+
+    compile('com.google.http-client:google-http-client-gson:1.22.0') {
+        exclude module: 'httpclient'
+     //   exclude group: 'org.apache.httpcomponents' //by group
+       // exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+
 
     testCompile 'junit:junit:4.12'
 }

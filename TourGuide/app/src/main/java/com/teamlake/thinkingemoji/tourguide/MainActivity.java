@@ -13,7 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
+//import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -47,8 +47,8 @@ import java.util.Locale;
 
 public class MainActivity extends Activity implements ClickInterface {
 
-    private static final String CLOUD_VISION_API_KEY = "YOUR_API_KEY";
-    public static final String FILE_NAME = "temp.jpg";
+    private static final String CLOUD_VISION_API_KEY = "AIzaSyAvjSSy1WMhIxtfqEXu2vaOYrDiVi9C7nM";
+    public static final String FILE_NAME = "pic.jpg";
     private static final String ANDROID_CERT_HEADER = "X-Android-Cert";
     private static final String ANDROID_PACKAGE_HEADER = "X-Android-Package";
 
@@ -74,24 +74,15 @@ public class MainActivity extends Activity implements ClickInterface {
 
     @Override
     public void buttonClicked() {
-        Log.d("CLICKED: ", "*****BUTTON WAS CLICKED");
+        Log.d(TAG, "*****BUTTON WAS CLICKED");
+        Uri photoUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", getCameraFile());
+        Log.d(TAG, photoUri.toString());
+        uploadImage(photoUri);
     }
 
     public File getCameraFile() {
         File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         return new File(dir, FILE_NAME);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
-            uploadImage(data.getData());
-        } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
-            Uri photoUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", getCameraFile());
-            uploadImage(photoUri);
-        }
     }
 
     public void uploadImage(Uri uri) {
