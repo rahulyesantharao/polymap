@@ -432,7 +432,7 @@ public class MainActivity extends Activity implements ClickInterface {
 
     private String getWikiTitle(String response) throws JSONException {
         final JSONArray arr = new JSONArray(response);
-        final JSONArray titles = arr.getJSONArray(0);
+        final JSONArray titles = arr.getJSONArray(1);
         return titles.getString(0);
     }
 
@@ -446,6 +446,8 @@ public class MainActivity extends Activity implements ClickInterface {
                 .appendQueryParameter("format", "json")
                 .appendQueryParameter("action", "query")
                 .appendQueryParameter("prop", "extracts")
+                .appendQueryParameter("exintro", "")
+                .appendQueryParameter("explaintext", "")
                 .appendQueryParameter("titles", title.replaceAll(" ", "_"))
                 .build()
                 .toString();
@@ -475,7 +477,10 @@ public class MainActivity extends Activity implements ClickInterface {
         final JSONObject obj = new JSONObject(response);
         final JSONObject results = obj.getJSONObject("query");
         final JSONObject pages = results.getJSONObject("pages");
-        String finalString = title + pages.getString("extract");
+        Iterator<String> keys = pages.keys();
+        String strName = keys.next();
+        final JSONObject finalObj = pages.getJSONObject(strName);
+        String finalString = title + ": " + finalObj.getString("extract");
         Log.d(TAG + "479", "FINAL STRING IS " + finalString);
     }
 
