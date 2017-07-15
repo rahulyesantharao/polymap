@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v13.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -76,6 +77,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import static android.support.design.widget.Snackbar.LENGTH_INDEFINITE;
+import static android.widget.Toast.LENGTH_LONG;
 
 public class MainActivity extends Activity implements ClickInterface {
 
@@ -201,11 +205,11 @@ public class MainActivity extends Activity implements ClickInterface {
 
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
-                Toast.makeText(this, R.string.image_picker_error, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
             }
         } else {
             Log.d(TAG, "Image picker gave us a null image.");
-            Toast.makeText(this, R.string.image_picker_error, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
         }
     }
 
@@ -352,6 +356,8 @@ public class MainActivity extends Activity implements ClickInterface {
                                                 public void onResponse(String response) {
                                                     // Display the first 500 characters of the response string.
                                                     Log.d(TAG + " 325", "Response is: "+ response);
+                                                    Snackbar resultSB = Snackbar.make(findViewById(R.id.container), "Results Received!", LENGTH_INDEFINITE);
+                                                    resultSB.show();
                                                 }
                                             }, new Response.ErrorListener() {
                                         @Override

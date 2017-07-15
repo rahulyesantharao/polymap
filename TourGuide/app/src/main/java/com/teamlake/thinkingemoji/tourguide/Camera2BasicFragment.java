@@ -602,6 +602,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
      * Opens the camera specified by {@link Camera2BasicFragment#mCameraId}.
      */
     private void openCamera(int width, int height) {
+        Log.d(TAG + "*5", width + ", " + height);
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             requestCameraPermission();
