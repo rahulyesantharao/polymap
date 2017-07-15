@@ -19,4 +19,18 @@ public class MainActivity extends Activity {
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
     }
+
+    @Override
+    public void buttonClicked() {
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            // ...
+                        }
+                    }
+                });
+    }
 }
