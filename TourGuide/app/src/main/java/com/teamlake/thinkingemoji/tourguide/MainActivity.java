@@ -340,8 +340,8 @@ public class MainActivity extends Activity implements ClickInterface {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
                                     Log.d(TAG + " 302", location.toString());
-                                    final double lat = 30.1;
-                                    final double lon = -95.7;
+                                    final double lat = 30.2744;
+                                    final double lon = -97.7400;
 
                                     // Instantiate the RequestQueue.
                                     RequestQueue queue = Volley.newRequestQueue(mContext);
@@ -396,7 +396,7 @@ public class MainActivity extends Activity implements ClickInterface {
     private String getQuery(String response) throws JSONException {
         final JSONObject obj = new JSONObject(response);
         final JSONArray results = obj.getJSONArray("results");
-        final JSONObject location = results.getJSONObject(0);
+        final JSONObject location = results.getJSONObject(1);
         return location.getString("name");
     }
 
