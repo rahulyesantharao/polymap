@@ -597,7 +597,7 @@ public class MainActivity extends Activity implements ClickInterface {
     }
     public void switchMap(View view) {
         // Create a Uri from an intent string. Use the result to create an Intent.
-        Uri gmmIntentUri = Uri.parse("geo:37.7749,-122.4194?z=0");
+        //Uri gmmIntentUri = Uri.parse("geo:37.7749,-122.4194?z=0");
         // Create an Intent from gmmIntentUri. Set the action to ACTION_VIEW
         Intent mapIntent = new Intent(MainActivity.this, MapsActivity.class);
         // Make the Intent explicit by setting the Google Maps package

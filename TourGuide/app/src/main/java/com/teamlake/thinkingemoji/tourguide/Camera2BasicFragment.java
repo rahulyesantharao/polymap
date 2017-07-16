@@ -65,6 +65,8 @@ import android.hardware.SensorManager;
 
 public class Camera2BasicFragment extends Fragment implements View.OnClickListener, FragmentCompat.OnRequestPermissionsResultCallback, SensorEventListener {
 
+    private Polling mPollingTask;
+
     ClickInterface ci;
 
     public SensorManager senSensorManager;
@@ -537,12 +539,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
         super.onResume();
 //        Log.d(TAG, "this is sachin onResume");
 //        new Polling().execute();
-        new Polling().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-        Activity activity = getActivity();
-        senSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
-        senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         startBackgroundThread();
 
@@ -551,16 +547,35 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
         // a camera and start preview from here (otherwise, we wait until the surface is ready in
         // the SurfaceTextureListener).
         if (mTextureView.isAvailable()) {
+            takePicture = 0;
             openCamera(mTextureView.getWidth(), mTextureView.getHeight());
+            mPollingTask = new Polling();
+            mPollingTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            Activity activity = getActivity();
+            senSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+            senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         } else {
+            takePicture = 0;
             mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
+            mPollingTask = new Polling();
+            mPollingTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            Activity activity = getActivity();
+            senSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+            senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
     @Override
     public void onPause() {
+        senSensorManager.unregisterListener(this);
+        mPollingTask.cancel(true);
         closeCamera();
         stopBackgroundThread();
+        Log.d(TAG + "**", "CAMERA PAUSED*****");
         super.onPause();
     }
 
