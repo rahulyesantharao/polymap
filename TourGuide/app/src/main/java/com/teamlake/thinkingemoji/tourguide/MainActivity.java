@@ -676,18 +676,18 @@ public class MainActivity extends Activity implements ClickInterface {
                 message += "\n";
             }
         }
-        else if(webItems != null) {
-            for (EntityAnnotation webItem : webItems) {
-                message += String.format(Locale.US, "%.3f: %s", webItem.getScore(), webItem.getDescription());
-                message += "\n";
-            }
-        }
-        else if(logos != null) {
-            for (EntityAnnotation logo : logos) {
-                message += String.format(Locale.US, "%.3f: %s", logo.getScore(), logo.getDescription());
-                message += "\n";
-            }
-        }
+//        else if(webItems != null) {
+//            for (EntityAnnotation webItem : webItems) {
+//                message += String.format(Locale.US, "%.3f: %s", webItem.getScore(), webItem.getDescription());
+//                message += "\n";
+//            }
+//        }
+//        else if(logos != null) {
+//            for (EntityAnnotation logo : logos) {
+//                message += String.format(Locale.US, "%.3f: %s", logo.getScore(), logo.getDescription());
+//                message += "\n";
+//            }
+//        }
         else if(labels != null) {
             for (EntityAnnotation label : labels) {
                 message += String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription());
