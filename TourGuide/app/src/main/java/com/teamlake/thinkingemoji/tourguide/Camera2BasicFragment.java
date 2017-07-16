@@ -73,6 +73,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     public Sensor senAccelerometer;
 
     public int takePicture = 0;
+    public boolean canTakePicture = true;
 
     private long lastUpdate = 0;
     private float last_x, last_y, last_z;
@@ -503,6 +504,9 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
             long elapsed;
             long wait;
             int toDraw = 0;
+
+            long picTimeStart = System.nanoTime();
+
             running = true;
             while (running) {
 //                Log.d(TAG, "this is sachin while loop");
@@ -511,10 +515,12 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                     toDraw = 0;
 //                    Log.d(TAG, "this is sachin where we will poll for changes");
                     // check if timer is above a certain number if so then do pic crap
-                    if(takePicture > 210){
+                    if(takePicture > 210 && canTakePicture){
                         takePicture();
                         ci.buttonClicked();
                         takePicture = 0;
+                        canTakePicture = false;
+                        picTimeStart = System.nanoTime();
                     }
                 }
                 elapsed = System.nanoTime() - start;
@@ -529,6 +535,11 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                 }
                 toDraw++;
                 takePicture++;
+
+                if((System.nanoTime() - picTimeStart)/1000000000 > 15 && canTakePicture == false){
+                    Log.d(TAG, "this is sachin testing timer!");
+                    canTakePicture = true;
+                }
             }
             return "";
         }
