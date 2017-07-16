@@ -25,11 +25,35 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:support-v13:25.3.1'
-    compile 'com.android.support:support-v4:25.3.1'
+
+    compile('com.google.api-client:google-api-client-android:1.22.0') {
+        exclude module: 'httpclient'
+        //exclude group: 'org.apache.httpcomponents' //by group
+        //exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+    compile('com.google.apis:google-api-services-vision:v1-rev357-1.22.0') {
+        exclude module: 'httpclient'
+        //exclude group: 'org.apache.httpcomponents' //by group
+        //exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+
+    compile('com.google.http-client:google-http-client-gson:1.22.0') {
+        exclude module: 'httpclient'
+        //   exclude group: 'org.apache.httpcomponents' //by group
+        // exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+
+
+    compile 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support:support-v13:25.4.0'
+    compile 'com.android.support:support-v4:25.4.0'
+    compile 'com.android.support:design:25.4.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.google.android.gms:play-services:11.0.2'
     compile 'com.google.android.gms:play-services-maps:11.0.2'
+    compile 'com.google.code.findbugs:jsr305:2.0.1'
+    compile 'com.google.android.gms:play-services-location:11.0.2'
+    compile 'com.android.volley:volley:1.0.0'
+    compile 'com.android.support:support-core-utils:25.4.0'
     testCompile 'junit:junit:4.12'
 }
