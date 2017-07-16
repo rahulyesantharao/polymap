@@ -15,9 +15,11 @@
 -->
 <resources>
     <string name="picture">Picture</string>
+    <string name="map">MAP</string>
     <string name="description_info">Info</string>
     <string name="pictureButton">PicButton</string>
     <string name="request_permission">This sample needs camera permission.</string>
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="title_activity_maps">Travel Log</string>
     <string name="image_picker_error">Something is wrong with that image. Pick a different one please.</string>
 </resources>

@@ -16,8 +16,8 @@
 -->
 
 <resources>
-    <string name="app_name">Camera2Basic</string>
+    <string name="app_name">TourGuide</string>
     <string name="intro_message">
-        INTRO MESSAGE
+        MEME
     </string>
 </resources>
