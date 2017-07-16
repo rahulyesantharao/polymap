@@ -223,7 +223,7 @@ public class MainActivity extends Activity implements ClickInterface {
 
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
-                Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
+//                Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
             }
         } else {
             Log.d(TAG, "Image picker gave us a null image.");
@@ -419,7 +419,7 @@ public class MainActivity extends Activity implements ClickInterface {
                                                     Log.d(TAG + "361", "Query is " + query);
                                                     if(query != null) {
                                                         toSave.setName(query);
-                                                        getOutput(toSave query, image_id);
+                                                        getOutput(toSave, query, image_id);
                                                     }
                                                     else {
                                                         Snackbar resultSB = Snackbar.make(findViewById(R.id.container), "Sorry, no results found...", Snackbar.LENGTH_INDEFINITE);
@@ -514,7 +514,7 @@ public class MainActivity extends Activity implements ClickInterface {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        if(title == null || url == null) {
+                        if(title == null) {
                             final String noWikiUrl = "https://www.google.com/maps/place/?q=place_id" + id;
                             Snackbar resultSB = Snackbar.make(findViewById(R.id.container), "Is this what you were looking for?", Snackbar.LENGTH_INDEFINITE)
                                     .setAction("More", new View.OnClickListener() {
@@ -543,7 +543,7 @@ public class MainActivity extends Activity implements ClickInterface {
                             resultSB.show();
                         }
                         else {
-                            Log.d(TAG + "361", "Title is " + title + "; URL is " + url);
+                            Log.d(TAG + "361", "Title is " + title);
                           getSnippet(toSaveFinal, title);
                         }
                     }
