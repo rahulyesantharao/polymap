@@ -53,11 +53,13 @@ public class MapsActivity extends FragmentActivity
         //    builder.include(item);
        //    }
         // Add a marker in Sydney and move the camera
-        //LatLng sydney = new LatLng(-34, 151);
-        //LatLng houston = new LatLng(29.76,-93.37);
-        //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //mMap.addMarker(new MarkerOptions().position(houston).title("Marker in Houston"));
-        //Polyline polyline1 = mMap.addPolyline(new PolylineOptions().width(11).startCap(new RoundCap()).endCap(new RoundCap()).color(Color.RED).add(sydney, houston));
+        LatLng sydney = new LatLng(-34, 151);
+        LatLng houston = new LatLng(29.76,-93.37);
+        builder.include(sydney);
+        builder.include(houston);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.addMarker(new MarkerOptions().position(houston).title("Marker in Houston"));
+        Polyline polyline1 = mMap.addPolyline(new PolylineOptions().width(11).startCap(new RoundCap()).endCap(new RoundCap()).color(Color.RED).add(sydney, houston));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
     }
