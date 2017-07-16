@@ -124,6 +124,17 @@ public class MainActivity extends Activity implements ClickInterface {
 
     private FusedLocationProviderClient mFusedLocationClient;
 
+    private class LocationData {
+        LocationData() {
+            lon = lat = 0;
+            name="";
+            url="";
+        }
+        double lon, lat;
+        String name;
+        String url;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -367,13 +378,17 @@ public class MainActivity extends Activity implements ClickInterface {
                                                     // Display the first 500 characters of the response string.
                                                     Log.d(TAG + " 325", "Response is: "+ response);
                                                     String query = null;
+                                                    LocationData toSave = new LocationData();
+                                                    toSave.lat = lat;
+                                                    toSave.lon = lon;
                                                     try {
                                                         query = getQuery(response);
                                                     } catch (JSONException e) {
                                                         e.printStackTrace();
                                                     }
                                                     Log.d(TAG + "361", "Query is " + query);
-                                                    getOutput(query);
+                                                    toSave.name = query;
+                                                    getOutput(toSave, query);
                                                 }
                                             }, new Response.ErrorListener() {
                                         @Override
@@ -400,7 +415,8 @@ public class MainActivity extends Activity implements ClickInterface {
         return location.getString("name");
     }
 
-    private void getOutput(String query) {
+    private void getOutput(LocationData toSave, String query) {
+        final LocationData toSaveFinal = toSave;
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = new Uri.Builder()
                 .scheme("https")
@@ -420,15 +436,14 @@ public class MainActivity extends Activity implements ClickInterface {
                         // Display the first 500 characters of the response string.
                         Log.d(TAG + " 325", "Response is: "+ response);
                         String title = null;
-                        String url = null;
                         try {
                             title = getWikiTitle(response);
-                            url = getWikiUrl(response);
+                            toSaveFinal.url = getWikiUrl(response);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        Log.d(TAG + "361", "Title is " + title + "; URL is " + url);
-                        getSnippet(title, url);
+                        Log.d(TAG + "361", "Title is " + title + "; URL is " + toSaveFinal.url);
+                        getSnippet(toSaveFinal, title);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -452,10 +467,10 @@ public class MainActivity extends Activity implements ClickInterface {
         return titles.getString(0);
     }
 
-    private void getSnippet(String title, String placeURL) {
+    private void getSnippet(LocationData toSave, String title) {
         RequestQueue queue = Volley.newRequestQueue(this);
         final String finalTitle = title;
-        final String finalURL = placeURL;
+        final LocationData toSaveFinal = toSave;
         String url = new Uri.Builder()
                 .scheme("https")
                 .authority("en.wikipedia.org")
@@ -475,7 +490,7 @@ public class MainActivity extends Activity implements ClickInterface {
                         // Display the first 500 characters of the response string.
                         Log.d(TAG + " 325", "Response is: "+ response);
                         try {
-                            getFinalString(response, finalTitle, finalURL);
+                            getFinalString(toSaveFinal, response, finalTitle);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -490,7 +505,7 @@ public class MainActivity extends Activity implements ClickInterface {
         queue.add(stringRequest);
     }
 
-    private void getFinalString(String response, String title, String url) throws JSONException {
+    private void getFinalString(LocationData toSave, String response, String title) throws JSONException {
         final JSONObject obj = new JSONObject(response);
         final JSONObject results = obj.getJSONObject("query");
         final JSONObject pages = results.getJSONObject("pages");
@@ -500,7 +515,7 @@ public class MainActivity extends Activity implements ClickInterface {
         String finalString = title + ": " + finalObj.getString("extract");
         Log.d(TAG + "479", "FINAL STRING IS " + finalString);
 
-        final String finalURL = url;
+        final String finalURL = toSave.url;
         // Create the SnackBar and attach an OnClickListener
         Snackbar resultSB = Snackbar.make(findViewById(R.id.container), finalString, Snackbar.LENGTH_INDEFINITE)
             .setAction("More", new View.OnClickListener() {
@@ -527,6 +542,8 @@ public class MainActivity extends Activity implements ClickInterface {
         tvSB.setMaxLines(6);
 
         resultSB.show();
+
+        // Save the toSave data
     }
 
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
