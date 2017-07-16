@@ -420,13 +420,15 @@ public class MainActivity extends Activity implements ClickInterface {
                         // Display the first 500 characters of the response string.
                         Log.d(TAG + " 325", "Response is: "+ response);
                         String title = null;
+                        String url = null;
                         try {
                             title = getWikiTitle(response);
+                            url = getWikiUrl(response);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        Log.d(TAG + "361", "Title is " + title);
-                        getSnippet(title);
+                        Log.d(TAG + "361", "Title is " + title + "; URL is " + url);
+                        getSnippet(title, url);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -438,15 +440,22 @@ public class MainActivity extends Activity implements ClickInterface {
         queue.add(stringRequest);
     }
 
+    private String getWikiUrl(String response) throws JSONException {
+        final JSONArray arr = new JSONArray(response);
+        final JSONArray urls = arr.getJSONArray(3);
+        return urls.getString(0);
+    }
+
     private String getWikiTitle(String response) throws JSONException {
         final JSONArray arr = new JSONArray(response);
         final JSONArray titles = arr.getJSONArray(1);
         return titles.getString(0);
     }
 
-    private void getSnippet(String title) {
+    private void getSnippet(String title, String placeURL) {
         RequestQueue queue = Volley.newRequestQueue(this);
         final String finalTitle = title;
+        final String finalURL = placeURL;
         String url = new Uri.Builder()
                 .scheme("https")
                 .authority("en.wikipedia.org")
@@ -466,7 +475,7 @@ public class MainActivity extends Activity implements ClickInterface {
                         // Display the first 500 characters of the response string.
                         Log.d(TAG + " 325", "Response is: "+ response);
                         try {
-                            getFinalString(response, finalTitle);
+                            getFinalString(response, finalTitle, finalURL);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -481,7 +490,7 @@ public class MainActivity extends Activity implements ClickInterface {
         queue.add(stringRequest);
     }
 
-    private void getFinalString(String response, String title) throws JSONException {
+    private void getFinalString(String response, String title, String url) throws JSONException {
         final JSONObject obj = new JSONObject(response);
         final JSONObject results = obj.getJSONObject("query");
         final JSONObject pages = results.getJSONObject("pages");
@@ -490,15 +499,33 @@ public class MainActivity extends Activity implements ClickInterface {
         final JSONObject finalObj = pages.getJSONObject(strName);
         String finalString = title + ": " + finalObj.getString("extract");
         Log.d(TAG + "479", "FINAL STRING IS " + finalString);
-        Snackbar resultSB = Snackbar.make(findViewById(R.id.container), finalString, LENGTH_INDEFINITE);
+
+        final String finalURL = url;
+        // Create the SnackBar and attach an OnClickListener
+        Snackbar resultSB = Snackbar.make(findViewById(R.id.container), finalString, Snackbar.LENGTH_INDEFINITE)
+            .setAction("More", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent openWiki = new Intent(getBaseContext(), WebViewActivity.class);
+                    openWiki.putExtra("url", finalURL);
+                    startActivity(openWiki);
+                }
+            });
+
         View viewSB = resultSB.getView();
+        TextView tvSB = (TextView) (viewSB).findViewById(android.support.design.R.id.snackbar_text);
+
+        // Moves the SnackBar to the top of the screen
         CoordinatorLayout.LayoutParams paramsSB = (CoordinatorLayout.LayoutParams)viewSB.getLayoutParams();
         paramsSB.gravity = Gravity.TOP;
         viewSB.setLayoutParams(paramsSB);
+
         viewSB.setBackgroundColor(Color.parseColor("#80000000"));
-        TextView tvSB = (TextView) (resultSB.getView()).findViewById(android.support.design.R.id.snackbar_text);
+
         tvSB.setTextSize(25);
         tvSB.setTypeface(tvSB.getTypeface(), Typeface.BOLD);
+        tvSB.setMaxLines(6);
+
         resultSB.show();
     }
 
