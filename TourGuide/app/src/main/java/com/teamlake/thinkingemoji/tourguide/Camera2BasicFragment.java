@@ -108,7 +108,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                 float z_speed = Math.abs(z - last_z)/diffTime*10000;
 
                 if(x_speed > 70 || y_speed > 70 || z_speed > 70){
-                    Log.d(TAG, "gyrating daniel B");
+//                    Log.d(TAG, "gyrating daniel B");
                     takePicture = 0;
                 }
 
@@ -507,7 +507,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                 start = System.nanoTime();
                 if (toDraw == 5) {
                     toDraw = 0;
-                    Log.d(TAG, "this is sachin where we will poll for changes");
+//                    Log.d(TAG, "this is sachin where we will poll for changes");
                     // check if timer is above a certain number if so then do pic crap
                     if(takePicture > 210){
                         takePicture();
@@ -536,7 +536,8 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     public void onResume() {
         super.onResume();
 //        Log.d(TAG, "this is sachin onResume");
-        new Polling().execute();
+//        new Polling().execute();
+        new Polling().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         Activity activity = getActivity();
         senSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
@@ -998,7 +999,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
-                Log.d(TAG, "this is sachin on click");
+//                Log.d(TAG, "this is sachin on click");
                 takePicture();
                 ci.buttonClicked();
                 break;
