@@ -123,17 +123,7 @@ public class MainActivity extends Activity implements ClickInterface {
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
     private FusedLocationProviderClient mFusedLocationClient;
-
-    private class LocationData {
-        LocationData() {
-            lon = lat = 0;
-            name="";
-            url="";
-        }
-        double lon, lat;
-        String name;
-        String url;
-    }
+    private DatabaseHandler db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,6 +134,8 @@ public class MainActivity extends Activity implements ClickInterface {
                     .replace(R.id.container, Camera2BasicFragment.newInstance())
                     .commit();
         }
+
+        db = new DatabaseHandler(this);
 
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this,
@@ -378,16 +370,19 @@ public class MainActivity extends Activity implements ClickInterface {
                                                     // Display the first 500 characters of the response string.
                                                     Log.d(TAG + " 325", "Response is: "+ response);
                                                     String query = null;
+//                                                    String id = null;
                                                     LocationData toSave = new LocationData();
-                                                    toSave.lat = lat;
-                                                    toSave.lon = lon;
+                                                    toSave.setLat(lat);
+                                                    toSave.setLon(lon);
                                                     try {
                                                         query = getQuery(response);
+//                                                        id = getQueryID(response);
                                                     } catch (JSONException e) {
                                                         e.printStackTrace();
                                                     }
                                                     Log.d(TAG + "361", "Query is " + query);
-                                                    toSave.name = query;
+                                                    toSave.setName(query);
+//                                                    toSave.setID(id);
                                                     getOutput(toSave, query);
                                                 }
                                             }, new Response.ErrorListener() {
@@ -415,6 +410,13 @@ public class MainActivity extends Activity implements ClickInterface {
         return location.getString("name");
     }
 
+//    private String getQueryID(String response) throws JSONException {
+//        final JSONObject obj = new JSONObject(response);
+//        final JSONArray results = obj.getJSONArray("results");
+//        final JSONObject location = results.getJSONObject(0);
+//        return location.getString("id");
+//    }
+
     private void getOutput(LocationData toSave, String query) {
         final LocationData toSaveFinal = toSave;
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -438,11 +440,11 @@ public class MainActivity extends Activity implements ClickInterface {
                         String title = null;
                         try {
                             title = getWikiTitle(response);
-                            toSaveFinal.url = getWikiUrl(response);
+                            toSaveFinal.setURL(getWikiUrl(response));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        Log.d(TAG + "361", "Title is " + title + "; URL is " + toSaveFinal.url);
+                        Log.d(TAG + "361", "Title is " + title + "; URL is " + toSaveFinal.getURL());
                         getSnippet(toSaveFinal, title);
                     }
                 }, new Response.ErrorListener() {
@@ -515,7 +517,7 @@ public class MainActivity extends Activity implements ClickInterface {
         String finalString = title + ": " + finalObj.getString("extract");
         Log.d(TAG + "479", "FINAL STRING IS " + finalString);
 
-        final String finalURL = toSave.url;
+        final String finalURL = toSave.getURL();
         // Create the SnackBar and attach an OnClickListener
         Snackbar resultSB = Snackbar.make(findViewById(R.id.container), finalString, Snackbar.LENGTH_INDEFINITE)
             .setAction("More", new View.OnClickListener() {
@@ -544,6 +546,8 @@ public class MainActivity extends Activity implements ClickInterface {
         resultSB.show();
 
         // Save the toSave data
+        db.addLocation(toSave);
+        Log.d(TAG, db.getAllLocations().toString());
     }
 
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
