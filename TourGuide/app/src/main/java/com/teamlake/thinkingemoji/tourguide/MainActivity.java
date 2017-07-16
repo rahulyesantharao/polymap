@@ -340,8 +340,8 @@ public class MainActivity extends Activity implements ClickInterface {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
                                     Log.d(TAG + " 302", location.toString());
-                                    final double lat = 30.2744;
-                                    final double lon = -97.7400;
+                                    final double lat = 30.283760;
+                                    final double lon = -97.739578;
 
                                     // Instantiate the RequestQueue.
                                     RequestQueue queue = Volley.newRequestQueue(mContext);
@@ -413,6 +413,7 @@ public class MainActivity extends Activity implements ClickInterface {
                 .appendQueryParameter("format", "json")
                 .build()
                 .toString();
+        Log.d(TAG + 416, "Wiki query URL is: " + url);
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
