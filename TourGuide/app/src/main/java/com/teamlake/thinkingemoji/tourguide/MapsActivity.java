@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -33,6 +34,7 @@ public class MapsActivity extends FragmentActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        //CustomInfoWindowAdapter customInfoWindowAdapter = new CustomInfoWindowAdapter();
     }
 
     class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
@@ -44,12 +46,17 @@ public class MapsActivity extends FragmentActivity
         }
 
         public View getInfoWindow(Marker marker) {
-            render(marker, customMarkerView);
-            return customMarkerView;
+            // TODO Auto-generated method stub
+            return null;
         }
 
         public View getInfoContents(Marker marker) {
-            return null;
+            TextView tvTitle = ((TextView)customMarkerView.findViewById(R.id.title));
+            tvTitle.setText(marker.getTitle());
+            TextView tvSnippet = ((TextView)customMarkerView.findViewById(R.id.snippet));
+            tvSnippet.setText(marker.getSnippet());
+
+            return customMarkerView;
         }
 
         private void render(Marker marker, View view) {
@@ -70,7 +77,7 @@ public class MapsActivity extends FragmentActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
         //List<LatLng> points = ;
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         //   for (LatLng item : points) {
@@ -79,12 +86,16 @@ public class MapsActivity extends FragmentActivity
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
         LatLng houston = new LatLng(29.76,-93.37);
+        LatLng cairo = new LatLng(30.0444, 31.2357);
         builder.include(sydney);
         builder.include(houston);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.addMarker(new MarkerOptions().position(houston).title("Marker in Houston"));
-        Polyline polyline1 = mMap.addPolyline(new PolylineOptions().width(11).startCap(new RoundCap()).endCap(new RoundCap()).color(Color.RED).add(sydney, houston));
+        builder.include(cairo);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney").snippet("meme"));
+        mMap.addMarker(new MarkerOptions().position(houston).title("Marker in Houston").snippet("shrek"));
+        mMap.addMarker(new MarkerOptions().position(cairo).title("Cairo").snippet("gyrateeeee"));
+        Polyline polyline1 = mMap.addPolyline(new PolylineOptions().width(11).startCap(new RoundCap()).endCap(new RoundCap()).color(Color.RED).add(sydney, houston, cairo));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
     }
 }
