@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity
@@ -25,6 +26,7 @@ public class MapsActivity extends FragmentActivity
             OnMapReadyCallback{
 
     private GoogleMap mMap;
+    private DatabaseHandler db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,7 @@ public class MapsActivity extends FragmentActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        db = new DatabaseHandler(this);
         //CustomInfoWindowAdapter customInfoWindowAdapter = new CustomInfoWindowAdapter();
     }
 
@@ -78,24 +81,38 @@ public class MapsActivity extends FragmentActivity
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
-        //List<LatLng> points = ;
+        List<LocationData> locations = db.getAllLocations();
+        if (locations.size() == 0)
+            return;
+        List<LatLng> points = new ArrayList<LatLng>();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        //   for (LatLng item : points) {
-        //    builder.include(item);
-       //    }
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        LatLng houston = new LatLng(29.76,-93.37);
-        LatLng cairo = new LatLng(30.0444, 31.2357);
-        builder.include(sydney);
-        builder.include(houston);
-        builder.include(cairo);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney").snippet("meme"));
-        mMap.addMarker(new MarkerOptions().position(houston).title("Marker in Houston").snippet("shrek"));
-        mMap.addMarker(new MarkerOptions().position(cairo).title("Cairo").snippet("gyrateeeee"));
-        Polyline polyline1 = mMap.addPolyline(new PolylineOptions().width(11).startCap(new RoundCap()).endCap(new RoundCap()).color(Color.RED).add(sydney, houston, cairo));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
+        for (LocationData item : locations) {
+            LatLng temp = new LatLng(item.getLat(),item.getLon());
+            points.add(temp);
+            mMap.addMarker(new MarkerOptions()
+                    .position(temp)
+                    .title(item.getName())
+                    .snippet(item.getURL()));
+            builder.include(temp);
+        }
+        Polyline polyline1 = mMap.addPolyline(new PolylineOptions()
+                .width(11)
+                .startCap(new RoundCap())
+                .endCap(new RoundCap())
+                .color(Color.RED)
+                .addAll(points));
+        // Add a marker in Sydney and move the camera
+        //LatLng sydney = new LatLng(-34, 151);
+        //LatLng houston = new LatLng(29.76,-93.37);
+        //LatLng cairo = new LatLng(30.0444, 31.2357);
+        //builder.include(sydney);
+        //builder.include(houston);
+        //builder.include(cairo);
+        //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney").snippet("meme"));
+        //mMap.addMarker(new MarkerOptions().position(houston).title("Marker in Houston").snippet("shrek"));
+        //mMap.addMarker(new MarkerOptions().position(cairo).title("Cairo").snippet("gyrateeeee"));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
     }
 }
