@@ -3,7 +3,11 @@ package com.teamlake.thinkingemoji.tourguide;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v13.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -22,6 +26,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -67,15 +72,24 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import static android.support.design.widget.Snackbar.LENGTH_INDEFINITE;
+import static android.widget.Toast.LENGTH_LONG;
 
 public class MainActivity extends Activity implements ClickInterface {
 
@@ -201,11 +215,11 @@ public class MainActivity extends Activity implements ClickInterface {
 
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
-                Toast.makeText(this, R.string.image_picker_error, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
             }
         } else {
             Log.d(TAG, "Image picker gave us a null image.");
-            Toast.makeText(this, R.string.image_picker_error, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
         }
     }
 
@@ -352,6 +366,14 @@ public class MainActivity extends Activity implements ClickInterface {
                                                 public void onResponse(String response) {
                                                     // Display the first 500 characters of the response string.
                                                     Log.d(TAG + " 325", "Response is: "+ response);
+                                                    String query = null;
+                                                    try {
+                                                        query = getQuery(response);
+                                                    } catch (JSONException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    Log.d(TAG + "361", "Query is " + query);
+                                                    getOutput(query);
                                                 }
                                             }, new Response.ErrorListener() {
                                         @Override
@@ -369,6 +391,142 @@ public class MainActivity extends Activity implements ClickInterface {
         }
         MyTask task = new MyTask(this);
         task.execute();
+    }
+
+    private String getQuery(String response) throws JSONException {
+        final JSONObject obj = new JSONObject(response);
+        final JSONArray results = obj.getJSONArray("results");
+        final JSONObject location = results.getJSONObject(0);
+        return location.getString("name");
+    }
+
+    private void getOutput(String query) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = new Uri.Builder()
+                .scheme("https")
+                .authority("en.wikipedia.org")
+                .path("w/api.php")
+                .appendQueryParameter("action", "opensearch")
+                .appendQueryParameter("search", query)
+                .appendQueryParameter("limit", "1")
+                .appendQueryParameter("namespace", "0")
+                .appendQueryParameter("format", "json")
+                .build()
+                .toString();
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d(TAG + " 325", "Response is: "+ response);
+                        String title = null;
+                        String url = null;
+                        try {
+                            title = getWikiTitle(response);
+                            url = getWikiUrl(response);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        Log.d(TAG + "361", "Title is " + title + "; URL is " + url);
+                        getSnippet(title, url);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG + " 330", "That didn't work!");
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+    }
+
+    private String getWikiUrl(String response) throws JSONException {
+        final JSONArray arr = new JSONArray(response);
+        final JSONArray urls = arr.getJSONArray(3);
+        return urls.getString(0);
+    }
+
+    private String getWikiTitle(String response) throws JSONException {
+        final JSONArray arr = new JSONArray(response);
+        final JSONArray titles = arr.getJSONArray(1);
+        return titles.getString(0);
+    }
+
+    private void getSnippet(String title, String placeURL) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        final String finalTitle = title;
+        final String finalURL = placeURL;
+        String url = new Uri.Builder()
+                .scheme("https")
+                .authority("en.wikipedia.org")
+                .path("w/api.php")
+                .appendQueryParameter("format", "json")
+                .appendQueryParameter("action", "query")
+                .appendQueryParameter("prop", "extracts")
+                .appendQueryParameter("exintro", "")
+                .appendQueryParameter("explaintext", "")
+                .appendQueryParameter("titles", title.replaceAll(" ", "_"))
+                .build()
+                .toString();
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d(TAG + " 325", "Response is: "+ response);
+                        try {
+                            getFinalString(response, finalTitle, finalURL);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG + " 330", "That didn't work!");
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+    }
+
+    private void getFinalString(String response, String title, String url) throws JSONException {
+        final JSONObject obj = new JSONObject(response);
+        final JSONObject results = obj.getJSONObject("query");
+        final JSONObject pages = results.getJSONObject("pages");
+        Iterator<String> keys = pages.keys();
+        String strName = keys.next();
+        final JSONObject finalObj = pages.getJSONObject(strName);
+        String finalString = title + ": " + finalObj.getString("extract");
+        Log.d(TAG + "479", "FINAL STRING IS " + finalString);
+
+        final String finalURL = url;
+        // Create the SnackBar and attach an OnClickListener
+        Snackbar resultSB = Snackbar.make(findViewById(R.id.container), finalString, Snackbar.LENGTH_INDEFINITE)
+            .setAction("More", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent openWiki = new Intent(getBaseContext(), WebViewActivity.class);
+                    openWiki.putExtra("url", finalURL);
+                    startActivity(openWiki);
+                }
+            });
+
+        View viewSB = resultSB.getView();
+        TextView tvSB = (TextView) (viewSB).findViewById(android.support.design.R.id.snackbar_text);
+
+        // Moves the SnackBar to the top of the screen
+        CoordinatorLayout.LayoutParams paramsSB = (CoordinatorLayout.LayoutParams)viewSB.getLayoutParams();
+        paramsSB.gravity = Gravity.TOP;
+        viewSB.setLayoutParams(paramsSB);
+
+        viewSB.setBackgroundColor(Color.parseColor("#80000000"));
+
+        tvSB.setTextSize(25);
+        tvSB.setTypeface(tvSB.getTypeface(), Typeface.BOLD);
+        tvSB.setMaxLines(6);
+
+        resultSB.show();
     }
 
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {

@@ -24,31 +24,18 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true" />
 
-    <FrameLayout
-        android:id="@+id/control"
-        android:layout_width="match_parent"
-        android:layout_height="112dp"
+    <ImageButton
+        android:id="@+id/picture"
+        style="@android:style/Widget.Material.Light.Button.Borderless"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:background="@color/control_background">
-
-        <Button
-            android:id="@+id/picture"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/picture" />
-
-        <ImageButton
-            android:id="@+id/info"
-            android:contentDescription="@string/description_info"
-            style="@android:style/Widget.Material.Light.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|right"
-            android:padding="20dp"
-            android:src="@drawable/ic_action_info" />
-
-    </FrameLayout>
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:contentDescription="@string/pictureButton"
+        android:padding="20dp"
+        android:src="@drawable/picture_button"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"/>
 
 </RelativeLayout>
