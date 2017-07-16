@@ -3,6 +3,7 @@ package com.teamlake.thinkingemoji.tourguide;
 import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -10,6 +11,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -33,6 +35,28 @@ public class MapsActivity extends FragmentActivity
         mapFragment.getMapAsync(this);
     }
 
+    class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+        private final View customMarkerView;
+
+        CustomInfoWindowAdapter() {
+            customMarkerView = getLayoutInflater()
+                    .inflate(R.layout.custom_info_contents, null);
+        }
+
+        public View getInfoWindow(Marker marker) {
+            render(marker, customMarkerView);
+            return customMarkerView;
+        }
+
+        public View getInfoContents(Marker marker) {
+            return null;
+        }
+
+        private void render(Marker marker, View view) {
+            // Add the code to set the required values
+            // for each element in your custominfowindow layout file
+        }
+    }
 
     /**
      * Manipulates the map once available.
