@@ -15,6 +15,9 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.hardware.Sensor;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -43,6 +46,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.os.AsyncTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,11 +59,65 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorManager;
 
-public class Camera2BasicFragment extends Fragment implements View.OnClickListener, FragmentCompat.OnRequestPermissionsResultCallback {
+public class Camera2BasicFragment extends Fragment implements View.OnClickListener, FragmentCompat.OnRequestPermissionsResultCallback, SensorEventListener {
 
     ClickInterface ci;
 
+    public SensorManager senSensorManager;
+    public Sensor senAccelerometer;
+
+    public int takePicture = 0;
+
+    private long lastUpdate = 0;
+    private float last_x, last_y, last_z;
+    private static final int SHAKE_THRESHOLD = 200;
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy){
+
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent){
+        Sensor mySensor = sensorEvent.sensor;
+//        Log.d(TAG, "gyrating sachin");
+        if(mySensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            float x = sensorEvent.values[0];
+            float y = sensorEvent.values[1];
+            float z = sensorEvent.values[2];
+
+            long curTime = System.currentTimeMillis();
+            if((curTime - lastUpdate) > 100){
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+//                float speed = Math.abs(x + y + z - last_x - last_y - last_z)/diffTime*10000;
+//
+//                if(speed < SHAKE_THRESHOLD){
+//                    Log.d(TAG, "gyrating daniel");
+//                    //TAKE PIC HERE
+//                    takePicture = 0;
+//                }
+
+                float x_speed = Math.abs(x - last_x)/diffTime*10000;
+                float y_speed = Math.abs(y - last_y)/diffTime*10000;
+                float z_speed = Math.abs(z - last_z)/diffTime*10000;
+
+                if(x_speed > 70 || y_speed > 70 || z_speed > 70){
+//                    Log.d(TAG, "gyrating daniel B");
+                    takePicture = 0;
+                }
+
+                last_x = x;
+                last_y = y;
+                last_z = z;
+            }
+        }
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -432,9 +490,60 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
         mFile = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "pic.jpg");
     }
 
+    private class Polling extends AsyncTask<String, Integer, String> {
+        @Override
+        protected String doInBackground(String... params) {
+//            Log.d(TAG, "this is sachin doInBack");
+            boolean running = false;
+            int FPS = 60;
+            long targetTime = 1000 / FPS;
+            long start;
+            long elapsed;
+            long wait;
+            int toDraw = 0;
+            running = true;
+            while (running) {
+//                Log.d(TAG, "this is sachin while loop");
+                start = System.nanoTime();
+                if (toDraw == 5) {
+                    toDraw = 0;
+//                    Log.d(TAG, "this is sachin where we will poll for changes");
+                    // check if timer is above a certain number if so then do pic crap
+                    if(takePicture > 210){
+                        takePicture();
+                        ci.buttonClicked();
+                        takePicture = 0;
+                    }
+                }
+                elapsed = System.nanoTime() - start;
+                wait = targetTime - elapsed / 1000000;
+                if (wait < 0) {
+                    wait = 5;
+                }
+                try {
+                    Thread.sleep(wait);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                toDraw++;
+                takePicture++;
+            }
+            return "";
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+//        Log.d(TAG, "this is sachin onResume");
+//        new Polling().execute();
+        new Polling().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        Activity activity = getActivity();
+        senSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+        senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
         startBackgroundThread();
 
         // When the screen is turned off and turned back on, the SurfaceTexture is already
@@ -890,6 +999,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
+//                Log.d(TAG, "this is sachin on click");
                 takePicture();
                 ci.buttonClicked();
                 break;

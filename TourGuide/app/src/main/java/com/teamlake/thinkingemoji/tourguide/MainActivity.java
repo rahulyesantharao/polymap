@@ -247,6 +247,7 @@ public class MainActivity extends Activity implements ClickInterface {
             @Override
             protected String doInBackground(Object... params) {
                 try {
+                    Log.d(TAG, "sachin HI");
                     HttpTransport httpTransport = AndroidHttp.newCompatibleTransport();
                     JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
 
@@ -404,9 +405,13 @@ public class MainActivity extends Activity implements ClickInterface {
                 }
             }
         }
+        Log.d(TAG, "AA");
         MyTask task = new MyTask(this);
-        task.execute();
+        Log.d(TAG, "BB");
+//        task.execute();
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
+
 
     private String getQuery(String response) throws JSONException {
         final JSONObject obj = new JSONObject(response);
