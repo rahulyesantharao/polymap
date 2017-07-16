@@ -340,8 +340,8 @@ public class MainActivity extends Activity implements ClickInterface {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
                                     Log.d(TAG + " 302", location.toString());
-                                    final double lat = location.getLatitude();
-                                    final double lon = location.getLongitude();
+                                    final double lat = 30.1;
+                                    final double lon = -95.7;
 
                                     // Instantiate the RequestQueue.
                                     RequestQueue queue = Volley.newRequestQueue(mContext);
@@ -497,7 +497,7 @@ public class MainActivity extends Activity implements ClickInterface {
         Iterator<String> keys = pages.keys();
         String strName = keys.next();
         final JSONObject finalObj = pages.getJSONObject(strName);
-        String finalString = title + ": " + finalObj.getString("extract");
+        String finalString = title + ":\n" + finalObj.getString("extract");
         Log.d(TAG + "479", "FINAL STRING IS " + finalString);
 
         final String finalURL = url;
@@ -522,8 +522,8 @@ public class MainActivity extends Activity implements ClickInterface {
 
         viewSB.setBackgroundColor(Color.parseColor("#80000000"));
 
-        tvSB.setTextSize(25);
-        tvSB.setTypeface(tvSB.getTypeface(), Typeface.BOLD);
+        tvSB.setTextSize(20);
+        //tvSB.setTypeface(tvSB.getTypeface(), Typeface.BOLD);
         tvSB.setMaxLines(6);
 
         resultSB.show();
