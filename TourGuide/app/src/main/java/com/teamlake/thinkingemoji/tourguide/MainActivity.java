@@ -1,6 +1,11 @@
 package com.teamlake.thinkingemoji.tourguide;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.net.Uri;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -123,6 +128,7 @@ public class MainActivity extends Activity implements ClickInterface {
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
     private FusedLocationProviderClient mFusedLocationClient;
+    private DatabaseHandler db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +139,8 @@ public class MainActivity extends Activity implements ClickInterface {
                     .replace(R.id.container, Camera2BasicFragment.newInstance())
                     .commit();
         }
+
+        db = new DatabaseHandler(this);
 
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this,
@@ -399,6 +407,9 @@ public class MainActivity extends Activity implements ClickInterface {
                                                     Log.d(TAG + " 325", "Response is: "+ response);
                                                     String query = null;
                                                     String image_id = null;
+                                                    LocationData toSave = new LocationData();
+                                                    toSave.setLat(lat);
+                                                    toSave.setLon(lon);
                                                     try {
                                                         query = getQuery(response);
                                                         image_id = getImageId(response);
@@ -407,7 +418,8 @@ public class MainActivity extends Activity implements ClickInterface {
                                                     }
                                                     Log.d(TAG + "361", "Query is " + query);
                                                     if(query != null) {
-                                                        getOutput(query, image_id);
+                                                        toSave.setName(query);
+                                                        getOutput(toSave query, image_id);
                                                     }
                                                     else {
                                                         Snackbar resultSB = Snackbar.make(findViewById(R.id.container), "Sorry, no results found...", Snackbar.LENGTH_INDEFINITE);
@@ -474,7 +486,8 @@ public class MainActivity extends Activity implements ClickInterface {
         }
     }
 
-    private void getOutput(String query, String image_id) {
+    private void getOutput(LocationData toSave, String query, String image_id) {
+        final LocationData toSaveFinal = toSave;
         RequestQueue queue = Volley.newRequestQueue(this);
         final String id = image_id;
         String url = new Uri.Builder()
@@ -495,10 +508,9 @@ public class MainActivity extends Activity implements ClickInterface {
                         // Display the first 500 characters of the response string.
                         Log.d(TAG + " 325", "Response is: "+ response);
                         String title = null;
-                        String url = null;
                         try {
                             title = getWikiTitle(response);
-                            url = getWikiUrl(response);
+                            toSaveFinal.setURL(getWikiUrl(response));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -528,10 +540,11 @@ public class MainActivity extends Activity implements ClickInterface {
                             tvSB.setTypeface(tvSB.getTypeface(), Typeface.BOLD);
                             tvSB.setMaxLines(6);
 
-                            resultSB.show();                        }
+                            resultSB.show();
+                        }
                         else {
                             Log.d(TAG + "361", "Title is " + title + "; URL is " + url);
-                            getSnippet(title, url);
+                          getSnippet(toSaveFinal, title);
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -566,10 +579,10 @@ public class MainActivity extends Activity implements ClickInterface {
         }
     }
 
-    private void getSnippet(String title, String placeURL) {
+    private void getSnippet(LocationData toSave, String title) {
         RequestQueue queue = Volley.newRequestQueue(this);
         final String finalTitle = title;
-        final String finalURL = placeURL;
+        final LocationData toSaveFinal = toSave;
         String url = new Uri.Builder()
                 .scheme("https")
                 .authority("en.wikipedia.org")
@@ -589,7 +602,7 @@ public class MainActivity extends Activity implements ClickInterface {
                         // Display the first 500 characters of the response string.
                         Log.d(TAG + " 325", "Response is: "+ response);
                         try {
-                            getFinalString(response, finalTitle, finalURL);
+                            getFinalString(toSaveFinal, response, finalTitle);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -604,7 +617,7 @@ public class MainActivity extends Activity implements ClickInterface {
         queue.add(stringRequest);
     }
 
-    private void getFinalString(String response, String title, String url) throws JSONException {
+    private void getFinalString(LocationData toSave, String response, String title) throws JSONException {
         final JSONObject obj = new JSONObject(response);
         final JSONObject results = obj.getJSONObject("query");
         final JSONObject pages = results.getJSONObject("pages");
@@ -614,7 +627,7 @@ public class MainActivity extends Activity implements ClickInterface {
         String finalString = title + ": " + finalObj.getString("extract");
         Log.d(TAG + "479", "FINAL STRING IS " + finalString);
 
-        final String finalURL = url;
+        final String finalURL = toSave.getURL();
         // Create the SnackBar and attach an OnClickListener
         Snackbar resultSB = Snackbar.make(findViewById(R.id.container), finalString, Snackbar.LENGTH_INDEFINITE)
             .setAction("More", new View.OnClickListener() {
@@ -641,6 +654,10 @@ public class MainActivity extends Activity implements ClickInterface {
         tvSB.setMaxLines(6);
 
         resultSB.show();
+
+        // Save the toSave data
+        db.addLocation(toSave);
+        Log.d(TAG, db.getAllLocations().toString());
     }
 
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
@@ -699,5 +716,16 @@ public class MainActivity extends Activity implements ClickInterface {
         }
 
         return message;
+    }
+    public void switchMap(View view) {
+        // Create a Uri from an intent string. Use the result to create an Intent.
+        //Uri gmmIntentUri = Uri.parse("geo:37.7749,-122.4194?z=0");
+        // Create an Intent from gmmIntentUri. Set the action to ACTION_VIEW
+        Intent mapIntent = new Intent(MainActivity.this, MapsActivity.class);
+        // Make the Intent explicit by setting the Google Maps package
+        mapIntent.setPackage("com.google.android.apps.maps");
+        // Attempt to start an activity that can handle the Intent
+        startActivity(mapIntent);
+        Log.d("meme","button pressed");
     }
 }
