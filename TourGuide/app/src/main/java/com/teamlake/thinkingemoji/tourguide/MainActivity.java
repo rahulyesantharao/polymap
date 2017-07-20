@@ -223,7 +223,7 @@ public class MainActivity extends Activity implements ClickInterface {
 
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
-                Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
+//                Toast.makeText(this, R.string.image_picker_error, LENGTH_LONG).show();
             }
         } else {
             Log.d(TAG, "Image picker gave us a null image.");
@@ -279,7 +279,10 @@ public class MainActivity extends Activity implements ClickInterface {
                     BatchAnnotateImagesRequest batchAnnotateImagesRequest =
                             new BatchAnnotateImagesRequest();
                     batchAnnotateImagesRequest.setRequests(new ArrayList<AnnotateImageRequest>() {{
-                        AnnotateImageRequest annotateImageRequest = new AnnotateImageRequest();
+                        AnnotateImageRequest landmarkImageRequest = new AnnotateImageRequest();
+                        AnnotateImageRequest webDetectionImageRequest = new AnnotateImageRequest();
+                        AnnotateImageRequest logoImageRequest = new AnnotateImageRequest();
+                        AnnotateImageRequest labelImageRequest = new AnnotateImageRequest();
 
                         // Add the image
                         Image base64EncodedImage = new Image();
@@ -291,10 +294,34 @@ public class MainActivity extends Activity implements ClickInterface {
 
                         // Base64 encode the JPEG
                         base64EncodedImage.encodeContent(imageBytes);
-                        annotateImageRequest.setImage(base64EncodedImage);
+                        landmarkImageRequest.setImage(base64EncodedImage);
+                        webDetectionImageRequest.setImage(base64EncodedImage);
+                        logoImageRequest.setImage(base64EncodedImage);
+                        labelImageRequest.setImage(base64EncodedImage);
 
                         // add the features we want
-                        annotateImageRequest.setFeatures(new ArrayList<Feature>() {{
+                        landmarkImageRequest.setFeatures(new ArrayList<Feature>() {{
+                            Feature landmarkDetection = new Feature();
+                            landmarkDetection.setType("LANDMARK_DETECTION");
+                            landmarkDetection.setMaxResults(10);
+                            add(landmarkDetection);
+                        }});
+
+                        webDetectionImageRequest.setFeatures(new ArrayList<Feature>() {{
+                            Feature webDetection = new Feature();
+                            webDetection.setType("WEB_DETECTION");
+                            webDetection.setMaxResults(10);
+                            add(webDetection);
+                        }});
+
+                        logoImageRequest.setFeatures(new ArrayList<Feature>() {{
+                            Feature logoDetection = new Feature();
+                            logoDetection.setType("LOGO_DETECTION");
+                            logoDetection.setMaxResults(10);
+                            add(logoDetection);
+                        }});
+
+                        labelImageRequest.setFeatures(new ArrayList<Feature>() {{
                             Feature labelDetection = new Feature();
                             labelDetection.setType("LABEL_DETECTION");
                             labelDetection.setMaxResults(10);
@@ -302,7 +329,10 @@ public class MainActivity extends Activity implements ClickInterface {
                         }});
 
                         // Add the list of one thing to the request
-                        add(annotateImageRequest);
+                        add(landmarkImageRequest);
+                        add(webDetectionImageRequest);
+                        add(logoImageRequest);
+                        add(labelImageRequest);
                     }});
 
                     Vision.Images.Annotate annotateRequest =
@@ -362,8 +392,8 @@ public class MainActivity extends Activity implements ClickInterface {
                                             .path("maps/api/place/nearbysearch/json")
                                             .appendQueryParameter("key", PLACE_VISION_API_KEY)
                                             .appendQueryParameter("location", lat + "," + lon)
-                                            .appendQueryParameter("radius", "100")
-                                            .appendQueryParameter("query", queryParam)
+                                            .appendQueryParameter("radius", "1000")
+                                            .appendQueryParameter("keyword", queryParam)
                                             .appendQueryParameter("type", typeParam)
                                             .build()
                                             .toString();
@@ -376,20 +406,40 @@ public class MainActivity extends Activity implements ClickInterface {
                                                     // Display the first 500 characters of the response string.
                                                     Log.d(TAG + " 325", "Response is: "+ response);
                                                     String query = null;
-//                                                    String id = null;
+                                                    String image_id = null;
                                                     LocationData toSave = new LocationData();
                                                     toSave.setLat(lat);
                                                     toSave.setLon(lon);
                                                     try {
                                                         query = getQuery(response);
-//                                                        id = getQueryID(response);
+                                                        image_id = getImageId(response);
                                                     } catch (JSONException e) {
                                                         e.printStackTrace();
                                                     }
                                                     Log.d(TAG + "361", "Query is " + query);
-                                                    toSave.setName(query);
-//                                                    toSave.setID(id);
-                                                    getOutput(toSave, query);
+                                                    if(query != null) {
+                                                        toSave.setName(query);
+                                                        getOutput(toSave, query, image_id);
+                                                    }
+                                                    else {
+                                                        Snackbar resultSB = Snackbar.make(findViewById(R.id.container), "Sorry, no results found...", Snackbar.LENGTH_INDEFINITE);
+
+                                                        View viewSB = resultSB.getView();
+                                                        TextView tvSB = (TextView) (viewSB).findViewById(android.support.design.R.id.snackbar_text);
+
+                                                        // Moves the SnackBar to the top of the screen
+                                                        CoordinatorLayout.LayoutParams paramsSB = (CoordinatorLayout.LayoutParams)viewSB.getLayoutParams();
+                                                        paramsSB.gravity = Gravity.TOP;
+                                                        viewSB.setLayoutParams(paramsSB);
+
+                                                        viewSB.setBackgroundColor(Color.parseColor("#80000000"));
+
+                                                        tvSB.setTextSize(25);
+                                                        tvSB.setTypeface(tvSB.getTypeface(), Typeface.BOLD);
+                                                        tvSB.setMaxLines(6);
+
+                                                        resultSB.show();
+                                                    }
                                                 }
                                             }, new Response.ErrorListener() {
                                         @Override
@@ -412,24 +462,34 @@ public class MainActivity extends Activity implements ClickInterface {
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-
     private String getQuery(String response) throws JSONException {
         final JSONObject obj = new JSONObject(response);
-        final JSONArray results = obj.getJSONArray("results");
-        final JSONObject location = results.getJSONObject(0);
-        return location.getString("name");
+        if(obj.getString("status").equals("OK")) {
+            final JSONArray results = obj.getJSONArray("results");
+            final JSONObject location = results.getJSONObject(0);
+            return location.getString("name");
+        }
+        else {
+            return null;
+        }
     }
 
-//    private String getQueryID(String response) throws JSONException {
-//        final JSONObject obj = new JSONObject(response);
-//        final JSONArray results = obj.getJSONArray("results");
-//        final JSONObject location = results.getJSONObject(0);
-//        return location.getString("id");
-//    }
+    private String getImageId(String response) throws JSONException {
+        final JSONObject obj = new JSONObject(response);
+        if(obj.getString("status").equals("OK")) {
+            final JSONArray results = obj.getJSONArray("results");
+            final JSONObject location = results.getJSONObject(0);
+            return location.getString("place_id");
+        }
+        else {
+            return null;
+        }
+    }
 
-    private void getOutput(LocationData toSave, String query) {
+    private void getOutput(LocationData toSave, String query, String image_id) {
         final LocationData toSaveFinal = toSave;
         RequestQueue queue = Volley.newRequestQueue(this);
+        final String id = image_id;
         String url = new Uri.Builder()
                 .scheme("https")
                 .authority("en.wikipedia.org")
@@ -454,8 +514,38 @@ public class MainActivity extends Activity implements ClickInterface {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        Log.d(TAG + "361", "Title is " + title + "; URL is " + toSaveFinal.getURL());
-                        getSnippet(toSaveFinal, title);
+                        if(title == null) {
+                            final String noWikiUrl = "https://www.google.com/maps/place/?q=place_id" + id;
+                            Snackbar resultSB = Snackbar.make(findViewById(R.id.container), "Is this what you were looking for?", Snackbar.LENGTH_INDEFINITE)
+                                    .setAction("More", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            Intent openURL = new Intent(getBaseContext(), WebViewActivity.class);
+                                            openURL.putExtra("url", noWikiUrl);
+                                            startActivity(openURL);
+                                        }
+                                    });
+
+                            View viewSB = resultSB.getView();
+                            TextView tvSB = (TextView) (viewSB).findViewById(android.support.design.R.id.snackbar_text);
+
+                            // Moves the SnackBar to the top of the screen
+                            CoordinatorLayout.LayoutParams paramsSB = (CoordinatorLayout.LayoutParams)viewSB.getLayoutParams();
+                            paramsSB.gravity = Gravity.TOP;
+                            viewSB.setLayoutParams(paramsSB);
+
+                            viewSB.setBackgroundColor(Color.parseColor("#80000000"));
+
+                            tvSB.setTextSize(25);
+                            tvSB.setTypeface(tvSB.getTypeface(), Typeface.BOLD);
+                            tvSB.setMaxLines(6);
+
+                            resultSB.show();
+                        }
+                        else {
+                            Log.d(TAG + "361", "Title is " + title);
+                          getSnippet(toSaveFinal, title);
+                        }
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -470,13 +560,23 @@ public class MainActivity extends Activity implements ClickInterface {
     private String getWikiUrl(String response) throws JSONException {
         final JSONArray arr = new JSONArray(response);
         final JSONArray urls = arr.getJSONArray(3);
-        return urls.getString(0);
+        if(!urls.isNull(0)) {
+            return urls.getString(0);
+        }
+        else {
+            return null;
+        }
     }
 
     private String getWikiTitle(String response) throws JSONException {
         final JSONArray arr = new JSONArray(response);
         final JSONArray titles = arr.getJSONArray(1);
-        return titles.getString(0);
+        if(!titles.isNull(0)) {
+            return titles.getString(0);
+        }
+        else {
+            return null;
+        }
     }
 
     private void getSnippet(LocationData toSave, String title) {
@@ -583,13 +683,35 @@ public class MainActivity extends Activity implements ClickInterface {
     private String convertResponseToString(BatchAnnotateImagesResponse response) {
         String message = "I found these things:\n\n";
 
-        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
-        if (labels != null) {
+        List<EntityAnnotation> landmarks = response.getResponses().get(0).getLabelAnnotations();
+        List<EntityAnnotation> webItems = response.getResponses().get(1).getLabelAnnotations();
+        List<EntityAnnotation> logos = response.getResponses().get(2).getLabelAnnotations();
+        List<EntityAnnotation> labels = response.getResponses().get(3).getLabelAnnotations();
+        if (landmarks != null) {
+            for (EntityAnnotation landmark : landmarks) {
+                message += String.format(Locale.US, "%.3f: %s", landmark.getScore(), landmark.getDescription());
+                message += "\n";
+            }
+        }
+//        else if(webItems != null) {
+//            for (EntityAnnotation webItem : webItems) {
+//                message += String.format(Locale.US, "%.3f: %s", webItem.getScore(), webItem.getDescription());
+//                message += "\n";
+//            }
+//        }
+//        else if(logos != null) {
+//            for (EntityAnnotation logo : logos) {
+//                message += String.format(Locale.US, "%.3f: %s", logo.getScore(), logo.getDescription());
+//                message += "\n";
+//            }
+//        }
+        else if(labels != null) {
             for (EntityAnnotation label : labels) {
                 message += String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription());
                 message += "\n";
             }
-        } else {
+        }
+        else {
             message += "nothing";
         }
 
